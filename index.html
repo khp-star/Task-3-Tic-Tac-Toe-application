@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Web Application</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>TIC-TAC-TOE</h1>
+
+        <!-- Game Mode Selection -->
+        <div class="controls">
+            <button id="btn-pvp" class="mode-btn active" onclick="resetGame('PVP')">2 Players</button>
+            <button id="btn-pvc" class="mode-btn" onclick="resetGame('PVC')">vs Computer</button>
+        </div>
+
+        <!-- Status Display -->
+        <div id="status" class="status">Player X's Turn</div>
+
+        <!-- 3x3 Game Board -->
+        <div class="board" id="board">
+            <button class="cell" onclick="makeMove(0)"></button>
+            <button class="cell" onclick="makeMove(1)"></button>
+            <button class="cell" onclick="makeMove(2)"></button>
+            <button class="cell" onclick="makeMove(3)"></button>
+            <button class="cell" onclick="makeMove(4)"></button>
+            <button class="cell" onclick="makeMove(5)"></button>
+            <button class="cell" onclick="makeMove(6)"></button>
+            <button class="cell" onclick="makeMove(7)"></button>
+            <button class="cell" onclick="makeMove(8)"></button>
+        </div>
+
+        <!-- Restart Button -->
+        <button class="reset-btn" onclick="resetGame()">Restart Game</button>
+    </div>
+
+    <script>
+        let currentMode = 'PVP';
+
+        async function makeMove(index) {
+            const res = await fetch(`/api/move?index=${index}`);
+            const data = await res.json();
+            updateUI(data);
+        }
+
+        async function resetGame(mode = currentMode) {
+            currentMode = mode;
+            document.getElementById('btn-pvp').classList.toggle('active', mode === 'PVP');
+            document.getElementById('btn-pvc').classList.toggle('active', mode === 'PVC');
+
+            const res = await fetch(`/api/reset?mode=${mode}`);
+            const data = await res.json();
+            updateUI(data);
+        }
+
+        function updateUI(data) {
+            document.getElementById('status').innerText = data.status;
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, i) => {
+                cell.innerText = data.board[i];
+                cell.className = 'cell ' + data.board[i].toLowerCase();
+            });
+        }
+
+        // Load initial board state on page refresh
+        window.onload = async () => {
+            const res = await fetch('/api/state');
+            updateUI(await res.json());
+        };
+    </script>
+</body>
+</html>
